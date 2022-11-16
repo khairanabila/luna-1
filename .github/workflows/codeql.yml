@@ -1,3 +1,5 @@
+# code quality check
+
 name: "CodeQL"
 
 on:
