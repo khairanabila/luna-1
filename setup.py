@@ -30,12 +30,9 @@ setup(
     author="arfy slowy",
     author_email="slowy.arfy@gmail.com",
     platform=["any"],
-    install_requires=install_requires,
-    dependency_links=dependency_links,
     long_description=readme,
     keywords="luna stable diffusion",
     setup_requires=setup_requires,
     url="https://github.com/De-Rune/luna",
-    packages=find_packages("stable_diffusion_tensorflow"),
-    package_dir={"": "stable_diffusion_tensorflow"},
+    packages=find_packages(),
 )
