@@ -17,6 +17,7 @@ generate image to image translate guide by text prompt.
 luna can running on online colab notebook you can check here:
 
 - [luna](https://colab.research.google.com/drive/1IyHaYLCPLRurVs-tJJRLbCcO4kr1xlOi?usp=sharing)
+- [luna with tpu](https://colab.research.google.com/drive/1C9xbPkt6Gysq4vFq_97S1ywGqDnqngjj?usp=sharing) 
 - [luna with gpu and mixed precision](https://colab.research.google.com/drive/1ydFWPt6BgPT7i4VmZcs8ttGaFu7dw-cV?usp=sharing) 
   - 15 seconds generation time per image (512 x 512) on default colab GPU without drop the quality
 
