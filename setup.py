@@ -32,7 +32,6 @@ setup(
     platform=["any"],
     long_description=readme,
     keywords="luna stable diffusion",
-    setup_requires=setup_requires,
     url="https://github.com/De-Rune/luna",
     packages=find_packages(),
 )
