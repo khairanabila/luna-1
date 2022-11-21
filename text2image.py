@@ -1,7 +1,8 @@
 from tensorflow import keras
-from stable_diffusion_tensorflow.stable_diffusion import Text2Image
+from stable_diffusion_tensorflow.stable_diffusion import StableDiffusion
 import argparse
 from PIL import Image
+from PIL.PngImagePlugin import PngInfo
 
 parser = argparse.ArgumentParser()
 
@@ -9,15 +10,21 @@ parser.add_argument(
     "--prompt",
     type=str,
     nargs="?",
-    default="a painting of a virus monster playing guitar",
+    default="DSLR photograph of a beautiful nature scenery, with waterfall, clear water, and trees",
+    help="the prompt to rdner",
 )
 
 parser.add_argument(
-    "--output",
+    "--negative-prompt",
     type=str,
-    nargs="?",
+    help="the negative prompt to use (if any)",
+)
+
+parser.add_argument(
+    "--output", type=str,
     default="output.png",
-    help="where to save the output image",
+    nargs="?",
+    help="where to save the output image"
 )
 
 parser.add_argument(
@@ -59,18 +66,23 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
 if args.mp:
-    print("Using mixed precision")
+    print("using mixed precision")
     keras.mixed_precision.set_global_policy("mixed_float16")
 
-generator = Text2Image(img_height=args.H, img_width=args.W, jit_compile=False)
+generator = StableDiffusion(img_height=args.H, img_width=args.W, jit_compile=False)
 img = generator.generate(
     args.prompt,
+    negative_prompt=args.negative_prompt,
     num_steps=args.steps,
     unconditional_guidance_scale=args.scale,
     temperature=1,
     batch_size=1,
     seed=args.seed,
 )
-Image.fromarray(img[0]).save(args.output)
+
+pnginfo = PngInfo()
+pnginfo.add_text("prompt", args.prompt)
+Image.fromarray(img[0].save(args.output, pnginfo=pnginfo))
 print(f"saved at {args.output}")
