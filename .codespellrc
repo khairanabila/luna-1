@@ -1,3 +1,3 @@
-[codespellrc]
-skip=README_ID.md, .git, *.yml
+[codespell]
+skip=README_ID.md,.git,*.yml
 ignore-words-list=slowy,Ue,Nd,OnS,bu,Bu,oT,ot,UE,muti
