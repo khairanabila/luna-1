@@ -1,6 +1,5 @@
 # luna
 ![luna_banner](.github/luna_banner.png)
-_<p align="center"> This image background generated with stable diffusion luna</p>_
 
 
 ![code_quality_checking](https://img.shields.io/github/workflow/status/slowy07/luna/CodeQL?label=Code%20quality%20check&style=flat-square)
@@ -22,7 +21,7 @@ luna can running on online colab notebook you can check here:
   - 15 seconds generation time per image (512 x 512) on default colab GPU without drop the quality
 
 
-**usage for online colab**:
+**usagagge for online colab**:
 
 - click the connect
 
@@ -49,14 +48,14 @@ source venv/bin/activate
 ### clone repo
 clone on https :
 ```
-git clone https://github.com/slowy07/luna
+git clone https://github.com/De-Rune/luna
 cd luna
 pip install -r requirements.txt
 ```
 
 clone on ssh :
 ```
-git clone git@github.com:slowy07/luna.git
+git clone git@github.com:De-Rune/luna.git
 cd luna
 pip install -r requirements.txt
 ```
@@ -75,7 +74,7 @@ python text2image.py --prompt="cool picture" --output="cool_pic.png"
 
 ###  install as python package
 ```
-pip install git+https://github.com/slowy07/luna
+pip install git+https://github.com/De-Rune/luna
 ```
 and run the package using
 ```python
@@ -112,8 +111,4 @@ if pip encountered an issue, try running pip with higher privilege using `sudo`
 | A beautiful ultradetailed anime illustration of a city street, trending on artstation | ![anime_street_ilustration](.github/result_output/anime_street_ilustration.png) |
 
 ---
-
-### donate
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/arfyslowy)
 
