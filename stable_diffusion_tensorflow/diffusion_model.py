@@ -42,7 +42,7 @@ class CrossAttention(keras.layers.Layer):
         self.to_q = keras.layers.Dense(n_heads * d_head, use_bias=False)
         self.to_k = keras.layers.Dense(n_heads * d_head, use_bias=False)
         self.to_v = keras.layers.Dense(n_heads * d_head, use_bias=False)
-        self.scale = d_head ** -0.5
+        self.scale = d_head**-0.5
         self.num_heads = n_heads
         self.head_size = d_head
         self.to_out = [keras.layers.Dense(n_heads * d_head)]

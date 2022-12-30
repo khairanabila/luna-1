@@ -213,7 +213,7 @@ class StableDiffusion:
         sqrt_one_minus_at = math.sqrt(1 - a_t)
         pred_x0 = (x - sqrt_one_minus_at * e_t) / math.sqrt(a_t)
 
-        dir_xt = math.sqrt(1.0 - a_prev - sigma_t ** 2) * e_t
+        dir_xt = math.sqrt(1.0 - a_prev - sigma_t**2) * e_t
         noise = sigma_t * tf.random.normal(x.shape, seed=seed) * temperature
         x_prev = math.sqrt(a_prev) * pred_x0 + dir_xt
         return x_prev, pred_x0

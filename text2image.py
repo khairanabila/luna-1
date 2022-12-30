@@ -21,10 +21,11 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--output", type=str,
+    "--output",
+    type=str,
     default="output.png",
     nargs="?",
-    help="where to save the output image"
+    help="where to save the output image",
 )
 
 parser.add_argument(
