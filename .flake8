@@ -11,3 +11,9 @@ extend-ignore =
   F401
   F822
   C901
+  # redefinition
+  F811
+  # unused arguments
+  F523
+  # comparison none object
+  E711
