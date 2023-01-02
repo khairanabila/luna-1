@@ -8,16 +8,21 @@ import torch
 import torch.distribute as dist
 from lib.config_holder import cfg_unique_holder as cfguh
 
+
 def singleton(class_):
     instances = {}
+
     def getinstance(*args, **kwargs):
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
+
     return getinstance
+
 
 def is_ddp():
     return dist.is_available() and dist.is_initialized()
+
 
 def get_rank(type="local"):
     ddp = is_ddp()
@@ -30,25 +35,35 @@ def get_rank(type="local"):
     elif type == "node":
         return global_rank // local_world_size
     elif type == "all":
-        return global_rank, global_rank % local_world_size, global_rank // local_world_size
+        return (
+            global_rank,
+            global_rank % local_world_size,
+            global_rank // local_world_size,
+        )
     else:
         assert False, "unknown type"
+
 
 def get_world_size(type="local"):
     ddp = is_ddp()
     global_rank = dist.get_rank() if ddp else 0
     global_world_size = dist.get_world_size() if ddp else 1
     local_world_size = torch.cuda.device_count()
-    if type == 'global':
+    if type == "global":
         return global_world_size
-    elif type == 'local':
+    elif type == "local":
         return local_world_size
-    elif type == 'node':
+    elif type == "node":
         return global_world_size // local_world_size
     elif type == "all":
-        return global_world_size, local_world_size, global_world_size // local_world_size
+        return (
+            global_world_size,
+            local_world_size,
+            global_world_size // local_world_size,
+        )
     else:
         assert False, "unknown type"
+
 
 class barrier_lock(object):
     def __init__(self, n):
@@ -56,7 +71,7 @@ class barrier_lock(object):
         id = int(random.random() * 10000) + int(time.time()) * 10000
         self.lock_shname = "barrier_lock_{}".format(id)
         lock_shm = shared_memory.SharedMemory(
-            name = self.lock_shname, create=True, size=n
+            name=self.lock_shname, create=True, size=n
         )
         for i in range(n):
             lock_shm.buf[i] = 0
@@ -64,24 +79,21 @@ class barrier_lock(object):
 
     def destroy(self):
         try:
-            lock_shm = shared_memory.SharedMemory(
-                name = self.lock_shname)
+            lock_shm = shared_memory.SharedMemory(name=self.lock_shname)
             lock_shm.close()
             lock_shm.unlink()
-        except:
+        except Exception:
             return
 
     def wait(self, k):
-        lock_shm = shared_memory.SharedMemory(
-            name = self.lock_shname
-        )
+        lock_shm = shared_memory.SharedMemory(name=self.lock_shname)
         assert lock_shm.buf[k] == 0, "twowaitson the same id is not allowed"
         lock_shm.buf[k] = 1
         if k == 0:
             while sum([lock_shm.buf[i] == 0 for i in range(self.n)]) != 0:
                 pass
             for i in range(self.n):
-                lock_shm.buf[i]= 0
+                lock_shm.buf[i] = 0
             return
         else:
             while lock_shm.buf[k] != 0:
@@ -103,7 +115,8 @@ class nodewise_sync_global(object):
             shm.unlink()
         except:
             return
-            
+
+
 @singleton
 class nodewise_sync(object):
     def __init__(self):
@@ -111,19 +124,21 @@ class nodewise_sync(object):
 
     def copy_global(self, reference):
         self.local_world_size = reference.local_world_size
-        self.b_lock= reference.b_lock
+        self.b_lock = reference.b_lock
         self.id_shmname = reference.id_shmname
         return self
 
     def local_init(self):
         self.ddp = is_ddp()
         self.global_rank, self.local_rank, self.node_rank = get_rank("all")
-        self.global_world_size,self.local_world_size, self.nodes = get_world_size("all")
+        self.global_world_size, self.local_world_size, self.nodes = get_world_size(
+            "all"
+        )
         if self.local_rank == 0:
             temp = int(random.random() * 10000) + int(time.time()) * 10000
             temp = pickle.dump(temp)
             shm = shared_memory.SharedMemory(
-                name = self.id_shmname, create=True, size=len(temp)
+                name=self.id_shmname, create=True, size=len(temp)
             )
             shm.close()
         return self
@@ -134,7 +149,7 @@ class nodewise_sync(object):
             sync_id = int(random.random() * 10000) + int(time.time()) * 10000
             data = pickle.dump(sync_id)
             shm = shared_memory.SharedMemory(name=self.id_shmname)
-            shm.buf[0:len(data)] = data[0:len(data)]
+            shm.buf[0 : len(data)] = data[0 : len(data)]
             self.barrier()
             shm.close()
         else:
@@ -146,17 +161,17 @@ class nodewise_sync(object):
 
     def barrier(self):
         self.b_lock.wait(self.local_rank)
-    
+
     def broadcast_r0(self, data=None):
         assert self.local_rank is not None, "not initialized"
-        id= self.random_sync_id()
+        id = self.random_sync_id()
         shmname = "broadcat_r0_{}".format(id)
         if self.local_rank == 0:
             assert data != None, "rank 0 needs to input data"
             data = pickle.dumps(data)
             datan = len(data)
             load_info_shm = shared_memory.SharedMemory(
-                name = shmname, create=True, size=datan
+                name=shmname, create=True, size=datan
             )
             load_info_shm.buf[0:datan] = data[0:datan]
             self.barrier()

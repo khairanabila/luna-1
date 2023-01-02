@@ -7,13 +7,17 @@ import functools
 import itertools
 import matplotlib.pyplot as plt
 
+
 def singleton(class_):
     instances = {}
+
     def getinstance(*args, **kwargs):
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
+
     return getinstance
+
 
 def str2value(v):
     v = v.strip()
@@ -32,27 +36,24 @@ def str2value(v):
     else:
         return v
 
+
 @singleton
 class get_unit(object):
     def __init__(self):
         self.unit = {}
         self.register("none", None)
 
-        self.register('conv'  , nn.Conv2d)
-        self.register('bn'    , nn.BatchNorm2d)
-        self.register('relu'  , nn.ReLU)
-        self.register('relu6' , nn.ReLU6)
-        self.register('lrelu' , nn.LeakyReLU)
-        self.register('dropout'  , nn.Dropout)
-        self.register('dropout2d', nn.Dropout2d)
-        self.register('sine',     Sine)
-        self.register('relusine', ReLUSine)
+        self.register("conv", nn.Conv2d)
+        self.register("bn", nn.BatchNorm2d)
+        self.register("relu", nn.ReLU)
+        self.register("relu6", nn.ReLU6)
+        self.register("lrelu", nn.LeakyReLU)
+        self.register("dropout", nn.Dropout)
+        self.register("dropout2d", nn.Dropout2d)
+        self.register("sine", Sine)
+        self.register("relusine", ReLUSine)
 
-    def register(
-        self,
-        name,
-        unitf
-    ):
+    def register(self, name, unitf):
         self.unit[name] = unitf
 
     def __call__(self, name):
@@ -76,20 +77,23 @@ class get_unit(object):
             for k, v in zip(args[::2], args[1::2]):
                 if v[0] == "(" and v[-1] == ")":
                     kwargs[k] = tuple([str2value(i) for i in v.strip("()").split(",")])
-                elif v[0]=='[' and v[-1]==']':
-                    kwargs[k] = [str2value(i) for i in v.strip('[]').split(',')]
+                elif v[0] == "[" and v[-1] == "]":
+                    kwargs[k] = [str2value(i) for i in v.strip("[]").split(",")]
                 else:
                     kwargs[k] = str2value(v)
             return functools.partial(f, **kwargs)
+
 
 def register(name):
     def wrapper(class_):
         get_unit().register(name, class_)
         return class_
+
     return wrapper
 
+
 class Sine(object):
-    def __init__(self, freq, gain = 1):
+    def __init__(self, freq, gain=1):
         self.freq = freq
         self.gain = gain
         self.repr = "sin(freq={}, gain={})".format(freq, gain)
@@ -98,32 +102,34 @@ class Sine(object):
         act_gain = self.gain * gain
         return torch.sin(self.freq * x) * act_gain
 
-    def __repr__(self,):
+    def __repr__(
+        self,
+    ):
         return self.repr
+
 
 class ReLUSine(nn.Module):
     def __init(self):
         super().__init__()
-    
+
     def forward(self, input):
         a = torch.sin(30 * input)
         b = nn.ReLU(inplace=False)(input)
         return a + b
 
+
 @register("lrelu_agc")
 class lrelu_agc(object):
-    def __init__(self, alpha = 0.1, gain = 1, clamp=None):
+    def __init__(self, alpha=0.1, gain=1, clamp=None):
         self.alpha = alpha
         if gain == "sqrt_2":
             self.gain = np.sqrt(2)
         else:
             self.gain = gain
         self.clamp = clamp
-        self.repr = "lrelu_agc(alpha={}, gain={}, clamp={})".format(
-            alpha, gain, clamp
-        )
-    
-    def __call__(self, x, gain = 1):
+        self.repr = "lrelu_agc(alpha={}, gain={}, clamp={})".format(alpha, gain, clamp)
+
+    def __call__(self, x, gain=1):
         x = F.leaky_relu(x, negative_slope=self.alpha, inplace=True)
         act_gain = self.gain * gain
         act_clamp = self.clamp * gain if self.clamp is not None else None
@@ -133,29 +139,25 @@ class lrelu_agc(object):
             x = x.clamp(-act_clamp, act_clamp)
         return x
 
-    def __repr__(self,):
+    def __repr__(
+        self,
+    ):
         return self.repr
+
 
 @register("se")
 class SpatialEncoding(nn.Module):
-    def __init__(
-        self,
-        in_dim,
-        out_dim,
-        sigma=6,
-        cat_input=True,
-        require_grad=False
-    ):
+    def __init__(self, in_dim, out_dim, sigma=6, cat_input=True, require_grad=False):
         super().__init__()
         assert out_dim % (2 * in_dim) == 0, "dimension must be dividable"
 
         n = out_dim // 2 // in_dim
         m = 2 ** np.linspace(0, sigma, n)
-        m = np.stack([m] + [np.zeros_like(m)]*(in_dim-1), axis=-1)
+        m = np.stack([m] + [np.zeros_like(m)] * (in_dim - 1), axis=-1)
         m = np.concatenate([np.roll(m, i, axis=-1) for i in range(in_dim)], axis=0)
         self.emb = torch.FloatTensor(m)
         if require_grad:
-            self.emb = nn.Parameter(self.emb, requires_grad = True)
+            self.emb = nn.Parameter(self.emb, requires_grad=True)
 
     def forward(self, x, format="[n x c]"):
         if format == "[bs x c x 2D]":
@@ -186,22 +188,16 @@ class SpatialEncoding(nn.Module):
         )
         return outstr
 
+
 @register("rffe")
 class RFEncoding(SpatialEncoding):
-    def __init__(
-        self,
-        in_dim,
-        out_dim,
-        sigma = 6,
-        cat_input=True,
-        require_grad=False
-    ):
+    def __init__(self, in_dim, out_dim, sigma=6, cat_input=True, require_grad=False):
         super().__init__(in_dim, out_dim, sigma, cat_input, require_grad)
         n = out_dim // 2
         m = np.random.normal(0, sigma, size=(n, in_dim))
         self.emb = torch.FloatTensor(m)
         if require_grad:
-            self.emb = nn.Parameter(self.emb, requires_grad = True)
+            self.emb = nn.Parameter(self.emb, requires_grad=True)
 
     def extra_repr(self):
         outstr = "RFEncoding (in={}, out={}, cat_input={}, require_grad={})".format(
@@ -209,45 +205,56 @@ class RFEncoding(SpatialEncoding):
         )
         return outstr
 
+
 def freeze(net):
     for m in net.modules():
         if isinstance(
-            m, (nn.BatchNorm2d, nn.SyncBatchNorm,)
+            m,
+            (
+                nn.BatchNorm2d,
+                nn.SyncBatchNorm,
+            ),
         ):
             m.eval()
     for pi in net.parameter():
         pi.requires_grad = False
     return net
 
+
 def common_init(m):
     if isinstance(
-        m, (nn.Conv2d, nn.ConvTranspose2d,)
+        m,
+        (
+            nn.Conv2d,
+            nn.ConvTranspose2d,
+        ),
     ):
-        nn.init.kaiming_normal_(m.weight, mode = "fan_out", nonlinearity="relu")
+        nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
-    elif isinstance(
-        m, (nn.BatchNorm2d, nn.SyncBatchNorm)
-    ):
+    elif isinstance(m, (nn.BatchNorm2d, nn.SyncBatchNorm)):
         nn.init.constant_(m.weight, 1)
         nn.init.constant_(m.bias, 0)
     else:
         pass
+
 
 def init_moudle(module):
     if isinstance(module, (list, tuple)):
         module = list(module)
     else:
         module = [module]
-    
+
     for mi in module:
         for mii in mi.modules():
             common_init(mii)
+
 
 def get_total_param(net):
     if getattr(net, "parameters", None) is None:
         return 0
     return sum(p.numel() for p in net.parameters())
+
 
 def get_total_param_sum(net):
     if getattr(net, "parameters", None) is None:

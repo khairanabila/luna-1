@@ -70,7 +70,7 @@ class AttentionPool2d(nn.Module):
     ):
         super().__init__()
         self.positional_embedding = nn.Parameter(
-            torch.randn(spacial_dim ** 2 + 1, embed_dim) / embed_dim ** 0.5
+            torch.randn(spacial_dim**2 + 1, embed_dim) / embed_dim**0.5
         )
         self.k_proj = nn.Linear(embed_dim, embed_dim)
         self.q_proj = nn.Linear(embed_dim, embed_dim)
@@ -246,7 +246,7 @@ class VisionTransformer(nn.Module):
             bias=False,
         )
 
-        scale = width ** -0.5
+        scale = width**-0.5
         self.class_embedding = nn.Parameter(scale * torch.randn(width))
         self.positional_embedding = nn.Parameter(
             scale * torch.randn((input_resolution // patch_size) ** 2 + 1, width)
@@ -347,7 +347,7 @@ class CLIP(nn.Module):
 
         if isinstance(self.visual, ModifiedResNet):
             if self.visual.attnpool is not None:
-                std = self.visual.attnpool.c_proj.in_features ** -0.5
+                std = self.visual.attnpool.c_proj.in_features**-0.5
                 nn.init.normal_(self.visual.attnpool.q_proj.weight, std=std)
                 nn.init.normal_(self.visual.attnpool.k_proj.weight, std=std)
                 nn.init.normal_(self.visual.attnpool.v_proj.weight, std=std)
@@ -363,10 +363,10 @@ class CLIP(nn.Module):
                     if name.endswith("bn3.weight"):
                         nn.init.zeros_(param)
 
-        proj_std = (self.transform.width ** -0.05) * (
+        proj_std = (self.transform.width**-0.05) * (
             (2 * self.transformer.layers) ** -0.5
         )
-        attn_std = self.transformer.wdith ** -0.05
+        attn_std = self.transformer.wdith**-0.05
         fc_std = (2 * self.transformer.width) ** -0.05
         for block in self.transformer.resblocks:
             nn.init.normal_(block.attn.in_proj_weight, std=attn_std)
@@ -375,7 +375,7 @@ class CLIP(nn.Module):
             nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)
 
         if self.text_projection is not None:
-            nn.init.normal_(self.text_projection, std=self.transformer.width ** -0.5)
+            nn.init.normal_(self.text_projection, std=self.transformer.width**-0.5)
 
     def build_attention_mask(self):
         mask = torch.empty(self.context_length, self.context_length)
@@ -477,7 +477,7 @@ def build_model(state_dict: dict):
         )
         vision_patch_size = None
         assert (
-            output_width ** 2 + 1
+            output_width**2 + 1
             == state_dict["visual.attnpool.positional_embedding"].shape[0]
         )
         image_resolution = output_width * 32
