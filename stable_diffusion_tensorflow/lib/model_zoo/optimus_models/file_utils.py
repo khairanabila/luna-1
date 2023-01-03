@@ -202,6 +202,10 @@ def http_get(url, temp_file, proxies=None):
 
 
 def get_from_cache(url, cache_dir=None, force_download=False, proxies=None):
+    """
+    given a URL, look for the corresponding dataset in the local cache.
+    if it's not there, download it. then return the path to the cached file
+    """
     if cache_dir is None:
         cache_dir = PYTORCH_TRANSFORMERS_CACHE
     if sys.version_info[0] == 3 and isinstance(cache_dir, Path):
