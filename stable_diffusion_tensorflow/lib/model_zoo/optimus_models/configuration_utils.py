@@ -84,7 +84,7 @@ class PretrainedConfig(object):
 
         param:
             pretrained_model_name_or_path: either:
-                - a string with the `shorcut name` of a pre-trained model configuratiom
+                - a string with the `shorcut name` of a pre-trained model configuration
                 to load from cache or download e.g ``bert-base-uncased``
                 - a path to a `directory` containing a configuration file saved using the
                 function: `~pytorch_transformers.PretrainedConfig.save_pretrained` method
