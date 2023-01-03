@@ -239,7 +239,7 @@ def get_from_cache(url, cache_dir=None, force_download=False, proxies=None):
     if not os.path.exists(cache_path) or force_download:
         with tempfile.NamedTemporaryFile() as temp_file:
             logger.info(
-                "%s not found in ccahe or force_download set to True, downloading to %s",
+                "%s not found in cache or force_download set to True, downloading to %s",
                 url,
                 temp_file.name,
             )
