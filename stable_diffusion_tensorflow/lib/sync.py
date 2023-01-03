@@ -113,7 +113,7 @@ class nodewise_sync_global(object):
             shm = shared_memory.SharedMemory(name=self.id_shmname)
             shm.close()
             shm.unlink()
-        except:
+        except Exception:
             return
 
 
@@ -130,10 +130,11 @@ class nodewise_sync(object):
 
     def local_init(self):
         self.ddp = is_ddp()
-        self.global_rank, self.local_rank, self.node_rank = get_rank("all")
-        self.global_world_size, self.local_world_size, self.nodes = get_world_size(
-            "all"
-        )
+        self.global_rank, self.local_rank,
+        self.node_rank = get_rank("all")
+        self.global_world_size,
+        self.local_world_size,
+        self.nodes = get_world_size("all")
         if self.local_rank == 0:
             temp = int(random.random() * 10000) + int(time.time()) * 10000
             temp = pickle.dump(temp)
