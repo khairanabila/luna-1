@@ -26,6 +26,7 @@ from .file_utils import cached_path, CONFIG_NAME
 
 logger = logging.getLogger(__name__)
 
+
 class PretrainedConfig(object):
     r"""
     base class for all configuration classes.
@@ -40,10 +41,10 @@ class PretrainedConfig(object):
         - finetuning_task: string, default None
             name of thetask used to fine-tune the model. this can be used when converting
             from and original (Tensorflow or PyTorch) checkpoint.
-        
+
         - num_labels: integer, default 2
             number of classes to use when the model is a classification model (sequences/ token)
-        
+
         - output_attentions: boolean, default False
             should the model  return attentions weights
 
@@ -66,10 +67,12 @@ class PretrainedConfig(object):
     def save_pretrained(self, save_directory):
         """
         save a configuration object to the directory `save_directory`, so that it
-        can be re-loaded using the function 
+        can be re-loaded using the function
         '~pytorch_transformers.PretrainedConfig.from_pretrained' class method
         """
-        assert os.path.isdir(save_directory), "saving path should be directory where the model and configuration can be saved"
+        assert os.path.isdir(
+            save_directory
+        ), "saving path should be directory where the model and configuration can be saved"
 
         # if save usingthe predefined name, load using  `from_pretrained`
         output_config_file = os.path.join(save_directory, CONFIG_NAME)
@@ -98,7 +101,9 @@ class PretrainedConfig(object):
         return_unused_kwargs = kwargs.pop("return_unused_kwargs", False)
 
         if pretrained_model_name_or_path in cls.pretrained_config_achieve_map:
-            config_file = cls.pretrained_config_achieve_map[pretrained_model_name_or_path]
+            config_file = cls.pretrained_config_achieve_map[
+                pretrained_model_name_or_path
+            ]
         elif os.path.isdir(pretrained_model_name_or_path):
             config_file = os.path.join(pretrained_model_name_or_path, CONFIG_NAME)
         else:
@@ -106,8 +111,10 @@ class PretrainedConfig(object):
 
         try:
             resolved_config_file = cached_path(
-                config_file, cache_dir=cache_dir,
-                force_download=force_download, proxies=proxies
+                config_file,
+                cache_dir=cache_dir,
+                force_download=force_download,
+                proxies=proxies,
             )
         except EnvironmentError as env_error:
             if pretrained_model_name_or_path in cls.pretrained_config_achieve_map:
@@ -123,7 +130,7 @@ class PretrainedConfig(object):
                     "associated to this path or url".format(
                         pretrained_model_name_or_path,
                         ", ".join(cls.pretrained_config_achieve_map.keys()),
-                        config_file
+                        config_file,
                     )
                 )
             raise env_error
@@ -131,12 +138,18 @@ class PretrainedConfig(object):
         if resolved_config_file == config_file:
             logger.info("loading configuration file {}".format(config_file))
         else:
-            logger.info("loading configuration file {} from cache at {}".format(config_file, resolved_config_file))
+            logger.info(
+                "loading configuration file {} from cache at {}".format(
+                    config_file, resolved_config_file
+                )
+            )
 
         config = cls.from_json_file(resolved_config_file)
 
         if hasattr(config, "pruned_heads"):
-            config.pruned_heads = dict((int(key), set(value)) for key, value in config.pruned_heads.items())
+            config.pruned_heads = dict(
+                (int(key), set(value)) for key, value in config.pruned_heads.items()
+            )
 
         to_remove = []
         for key, value in kwargs.items():
@@ -175,6 +188,5 @@ class PretrainedConfig(object):
         return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
     def to_json_file(self, json_file_path):
-        with open(json_file_path, "w", encoding='utf-8') as writer:
+        with open(json_file_path, "w", encoding="utf-8") as writer:
             writer.write(self.to_json_string())
-        
