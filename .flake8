@@ -17,3 +17,5 @@ extend-ignore =
   F523
   # comparison none object
   E711
+  # undefined name
+  F821
