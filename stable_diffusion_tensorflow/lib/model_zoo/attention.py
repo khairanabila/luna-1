@@ -204,7 +204,7 @@ class BasicTransformerBlock(nn.Module):
             query_dim=dim,
             heads=n_heads,
             dim_head=d_head,
-            droput=dropout,
+            dropout=dropout,
             context_dim=context_dim if self.disable_self_attn else None,
         )
         self.ff = FeedForward(dim, dropout, glu=gated_ff)
